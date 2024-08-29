@@ -283,14 +283,14 @@ pub fn prepare_windows(
                 Ok(frame) => {
                     window.set_swapchain_texture(frame);
                 }
-                #[cfg(target_os = "linux")]
-                Err(wgpu::SurfaceError::Outdated) if is_nvidia() => {
-                    warn_once!(
-                        "Couldn't get swap chain texture. This often happens with \
-                        the NVIDIA drivers on Linux. It can be safely ignored."
-                    );
-                }
                 Err(wgpu::SurfaceError::Outdated) => {
+                    #[cfg(target_os = "linux")]
+                    if is_nvidia() {
+                        warn_once!(
+                            "Couldn't get swap chain texture. This often happens with \
+                            the NVIDIA drivers on Linux. Trying to reconfigure."
+                        );
+                    }
                     render_device.configure_surface(surface, &surface_data.configuration);
                     let frame = surface
                         .get_current_texture()
